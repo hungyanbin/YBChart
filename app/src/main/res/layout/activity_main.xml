@@ -10,6 +10,7 @@
         android:id="@+id/barChart"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        android:padding="8dp"
         android:layout_width="400dp"
         android:layout_height="400dp"/>
 

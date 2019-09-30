@@ -10,7 +10,6 @@ class BarChart : View {
     private val MAX_VALUE = 100
 
     private val data: List<BarData> = BarDataFactory.createRandomData(MAX_VALUE)
-    private var boundaryPadding = 8.toPx().toFloat()
     private var labelPadding = 8.toPx().toFloat()
     private var barDistance = 16.toPx().toFloat()
     private var barWidth = 60.toPx()
@@ -24,14 +23,13 @@ class BarChart : View {
     private val labelTextPaint = Paint().apply {
         color = Color.GRAY
         textAlign = Paint.Align.CENTER
-        textSize = 12.toPx().toFloat()
+        textSize = 30.toPx().toFloat()
     }
     private val valueTextPaint = Paint().apply {
         color = Color.GRAY
         textAlign = Paint.Align.RIGHT
-        textSize = 12.toPx().toFloat()
+        textSize = 30.toPx().toFloat()
     }
-    private var labelTextRect = Rect()
     private var valueTextRect = Rect()
 
     constructor(context: Context) : this(context, null)
@@ -44,11 +42,8 @@ class BarChart : View {
 
     }
 
-    private fun getTextHeight(): Int {
-        if (labelTextRect.height() == 0) {
-            labelTextPaint.getTextBounds("Test", 0, 3, labelTextRect)
-        }
-        return labelTextRect.height()
+    private fun getLabelTextHeight(): Int {
+        return labelTextPaint.textHeight()
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -59,18 +54,21 @@ class BarChart : View {
     }
 
     private fun drawValueText(canvas: Canvas) {
-        val drawX = getValueWidth() - labelPadding + boundaryPadding
-        val drawY = valueTextRect.height() / 2 + boundaryPadding
-        canvas.drawText(MAX_VALUE.toString(), drawX, drawY, valueTextPaint)
+        val drawX = getValueWidth() - labelPadding + paddingLeft
+        val drawY = valueTextPaint.textHeight() / 2 + paddingTop
+        canvas.drawText(MAX_VALUE.toString(), drawX, drawY.toFloat(), valueTextPaint)
     }
 
     private fun drawLabel(canvas: Canvas) {
-        val textCenterY = height - labelPadding - getTextHeight() / 2
+        canvas.save()
+        canvas.translate(paddingLeft + getValueWidth() + barDistance + 0.5f * barWidth
+            , (height - paddingBottom - getLabelTextHeight() / 2).toFloat())
 
         data.forEachIndexed { index: Int, barData: BarData ->
-            val textCenterX = boundaryPadding + (index + 0.5) * barWidth + (index + 1) * barDistance + getValueWidth()
-            canvas.drawText(barData.name, textCenterX.toFloat(), textCenterY, labelTextPaint)
+            val textCenterX = index * (barWidth + barDistance)
+            canvas.drawText(barData.name, textCenterX, 0f, labelTextPaint)
         }
+        canvas.restore()
     }
 
     private fun getValueWidth(): Float {
@@ -82,31 +80,35 @@ class BarChart : View {
     }
 
     private fun drawBar(canvas: Canvas) {
+        canvas.save()
+        canvas.translate(paddingLeft + barDistance + getValueWidth(),
+            height - paddingBottom - getLabelHeight())
         data.forEachIndexed { index: Int, barData: BarData ->
-            val left = boundaryPadding + index * barWidth + (index + 1) * barDistance + getValueWidth()
+            val left = index * (barWidth + barDistance)
             val right = left + barWidth
-            val bottom = height - boundaryPadding - getLabelHeight()
-            val top = bottom - bottom * (barData.value / MAX_VALUE)
+            val bottom = 0f
+            val top = - (height - getLabelHeight() - paddingBottom - paddingTop) * (barData.value / MAX_VALUE)
             val bar = RectF(left, top, right, bottom)
             canvas.drawRect(bar, barPaint)
         }
+        canvas.restore()
     }
 
     private fun drawBoundary(canvas: Canvas) {
         val labelHeight = getLabelHeight()
         //draw X
-        canvas.drawLine(boundaryPadding + getValueWidth(),
-            height - boundaryPadding - labelHeight,
-            width - boundaryPadding + getValueWidth(),
-            height - boundaryPadding - labelHeight,
-            linePaint)
+        canvas.save()
+        canvas.translate(getValueWidth() + paddingLeft, height - paddingBottom - labelHeight)
+        val xLength = width - getValueWidth() - paddingLeft - paddingRight
+        canvas.drawLine(0f, 0f, xLength, 0f, linePaint)
+        canvas.restore()
         //draw Y
-        canvas.drawLine(boundaryPadding + getValueWidth(),
-            height - boundaryPadding - labelHeight,
-            boundaryPadding + getValueWidth(),
-            boundaryPadding - labelHeight,
-            linePaint)
+        canvas.save()
+        canvas.translate(paddingLeft + getValueWidth(), paddingTop.toFloat())
+        val yLength = height - labelHeight - paddingTop - paddingBottom
+        canvas.drawLine(0f, 0f, 0f, yLength, linePaint)
+        canvas.restore()
     }
 
-    private fun getLabelHeight() = getTextHeight() + labelPadding
+    private fun getLabelHeight() = getLabelTextHeight() + labelPadding
 }
