@@ -8,6 +8,8 @@ import android.view.View
 class BarChart : View {
 
     private val MAX_VALUE = 100
+    private val defaultTextSize = 30.toPx().toFloat()
+    private val defaultColor = Color.GRAY
 
     private val data: List<BarData> = BarDataFactory.createRandomData(MAX_VALUE)
     private var labelPadding = 8.toPx().toFloat()
@@ -20,15 +22,17 @@ class BarChart : View {
     private val barPaint = Paint().apply {
         color = Color.RED
     }
+
+
     private val labelTextPaint = Paint().apply {
-        color = Color.GRAY
+        color = defaultColor
         textAlign = Paint.Align.CENTER
-        textSize = 30.toPx().toFloat()
+        textSize = defaultTextSize
     }
     private val valueTextPaint = Paint().apply {
-        color = Color.GRAY
+        color = defaultColor
         textAlign = Paint.Align.RIGHT
-        textSize = 30.toPx().toFloat()
+        textSize = defaultTextSize
     }
     private var valueTextRect = Rect()
 
@@ -39,7 +43,17 @@ class BarChart : View {
     }
 
     private fun init(context: Context, attributeSet: AttributeSet?) {
+        if (attributeSet == null) {
+            return
+        }
 
+        val typedArray = context.obtainStyledAttributes(attributeSet, R.styleable.BarChart)
+        linePaint.color = typedArray.getColor(R.styleable.BarChart_boundaryColor, defaultColor)
+        labelTextPaint.color = typedArray.getColor(R.styleable.BarChart_labelTextColor, defaultColor)
+        labelTextPaint.textSize = typedArray.getDimension(R.styleable.BarChart_labelTextSize, defaultTextSize)
+        valueTextPaint.color = typedArray.getColor(R.styleable.BarChart_valueTextColor, defaultColor)
+        valueTextPaint.textSize = typedArray.getDimension(R.styleable.BarChart_valueTextSize, defaultTextSize)
+        typedArray.recycle()
     }
 
     private fun getLabelTextHeight(): Int {
@@ -87,7 +101,7 @@ class BarChart : View {
             val left = index * (barWidth + barDistance)
             val right = left + barWidth
             val bottom = 0f
-            val top = - (height - getLabelHeight() - paddingBottom - paddingTop) * (barData.value / MAX_VALUE)
+            val top = -(height - getLabelHeight() - paddingBottom - paddingTop) * (barData.value / MAX_VALUE)
             val bar = RectF(left, top, right, bottom)
             canvas.drawRect(bar, barPaint)
         }

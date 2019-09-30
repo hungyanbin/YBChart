@@ -11,6 +11,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:padding="8dp"
+        app:labelTextColor="#888800"
+        app:valueTextColor="#008888"
+        app:boundaryColor="#AAAAAA"
         android:layout_width="400dp"
         android:layout_height="400dp"/>
 
