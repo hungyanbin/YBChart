@@ -3,27 +3,33 @@ package com.yanbin.chart
 import android.content.Context
 import android.graphics.*
 import android.util.AttributeSet
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 
 class BarChart : View {
+
+    //ViewModel
+    private var highlightIndex = 0
 
     private val MAX_VALUE = 100
     private val defaultTextSize = 30.toPx().toFloat()
     private val defaultColor = Color.GRAY
 
     private val data: List<BarData> = BarDataFactory.createRandomData(MAX_VALUE)
+
     private var labelPadding = 8.toPx().toFloat()
     private var barDistance = 16.toPx().toFloat()
     private var barWidth = 60.toPx()
+    private var barColor = Color.RED
+    private var barHighlightColor = Color.MAGENTA
     private val linePaint = Paint().apply {
         color = Color.BLACK
         strokeWidth = 1.toPx().toFloat()
     }
     private val barPaint = Paint().apply {
-        color = Color.RED
+        color = barColor
     }
-
-
     private val labelTextPaint = Paint().apply {
         color = defaultColor
         textAlign = Paint.Align.CENTER
@@ -43,6 +49,27 @@ class BarChart : View {
     }
 
     private fun init(context: Context, attributeSet: AttributeSet?) {
+        val gestureListener = object: GestureDetector.SimpleOnGestureListener() {
+            override fun onShowPress(e: MotionEvent?) {
+            }
+
+
+            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
+                if (highlightIndex < data.size - 1) {
+                    highlightIndex ++
+                } else {
+                    highlightIndex = -1
+                }
+                postInvalidate()
+                return true
+            }
+        }
+        val gestureDetector = GestureDetector(context, gestureListener)
+        setOnTouchListener { _, event -> gestureDetector.onTouchEvent(event) }
+
+        isClickable = true
+        isFocusable = true
+
         if (attributeSet == null) {
             return
         }
@@ -103,6 +130,12 @@ class BarChart : View {
             val bottom = 0f
             val top = -(height - getLabelHeight() - paddingBottom - paddingTop) * (barData.value / MAX_VALUE)
             val bar = RectF(left, top, right, bottom)
+
+            if (index == highlightIndex) {
+                barPaint.color = barHighlightColor
+            } else {
+                barPaint.color = barColor
+            }
             canvas.drawRect(bar, barPaint)
         }
         canvas.restore()
@@ -125,4 +158,5 @@ class BarChart : View {
     }
 
     private fun getLabelHeight() = getLabelTextHeight() + labelPadding
+
 }
