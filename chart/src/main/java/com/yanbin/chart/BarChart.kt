@@ -19,8 +19,6 @@ class BarChart : View {
     private val data: List<BarData> = BarDataFactory.createRandomData(MAX_VALUE)
 
     private var labelPadding = 8.toPx().toFloat()
-    private var barDistance = 16.toPx().toFloat()
-    private var barWidth = 60.toPx()
     private var barColor = Color.RED
     private var barHighlightColor = Color.MAGENTA
     private val linePaint = Paint().apply {
@@ -41,6 +39,7 @@ class BarChart : View {
         textSize = defaultTextSize
     }
     private var valueTextRect = Rect()
+    private val barChartViewModel = BarChartViewModel()
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attributeSet: AttributeSet?) : this(context, attributeSet, 0)
@@ -49,14 +48,14 @@ class BarChart : View {
     }
 
     private fun init(context: Context, attributeSet: AttributeSet?) {
-        val gestureListener = object: GestureDetector.SimpleOnGestureListener() {
+        val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
             override fun onShowPress(e: MotionEvent?) {
             }
 
 
             override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
                 if (highlightIndex < data.size - 1) {
-                    highlightIndex ++
+                    highlightIndex++
                 } else {
                     highlightIndex = -1
                 }
@@ -81,10 +80,24 @@ class BarChart : View {
         valueTextPaint.color = typedArray.getColor(R.styleable.BarChart_valueTextColor, defaultColor)
         valueTextPaint.textSize = typedArray.getDimension(R.styleable.BarChart_valueTextSize, defaultTextSize)
         typedArray.recycle()
+
+        with(barChartViewModel) {
+            barDatas = data
+            barWidth = 60.toPx()
+            barDistance = 16.toPx()
+            maxValue = MAX_VALUE
+            labelHeight = getLabelTextHeight()
+        }
     }
 
     private fun getLabelTextHeight(): Int {
         return labelTextPaint.textHeight()
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        barChartViewModel.onMeasure((width - paddingLeft - paddingRight - getValueWidth()).toInt(),
+            (height - paddingBottom - paddingTop - getLabelHeight()).toInt())
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -102,13 +115,15 @@ class BarChart : View {
 
     private fun drawLabel(canvas: Canvas) {
         canvas.save()
-        canvas.translate(paddingLeft + getValueWidth() + barDistance + 0.5f * barWidth
-            , (height - paddingBottom - getLabelTextHeight() / 2).toFloat())
+        canvas.translate(paddingLeft + getValueWidth()
+            , (height - paddingBottom).toFloat())
 
-        data.forEachIndexed { index: Int, barData: BarData ->
-            val textCenterX = index * (barWidth + barDistance)
-            canvas.drawText(barData.name, textCenterX, 0f, labelTextPaint)
-        }
+        barChartViewModel
+            .barLabelVM
+            .forEach { labelVM: BarLabelVM ->
+                canvas.drawText(labelVM.text, labelVM.centerX, labelVM.centerY, labelTextPaint)
+            }
+
         canvas.restore()
     }
 
@@ -122,22 +137,18 @@ class BarChart : View {
 
     private fun drawBar(canvas: Canvas) {
         canvas.save()
-        canvas.translate(paddingLeft + barDistance + getValueWidth(),
+        canvas.translate(paddingLeft + getValueWidth(),
             height - paddingBottom - getLabelHeight())
-        data.forEachIndexed { index: Int, barData: BarData ->
-            val left = index * (barWidth + barDistance)
-            val right = left + barWidth
-            val bottom = 0f
-            val top = -(height - getLabelHeight() - paddingBottom - paddingTop) * (barData.value / MAX_VALUE)
-            val bar = RectF(left, top, right, bottom)
 
-            if (index == highlightIndex) {
-                barPaint.color = barHighlightColor
-            } else {
-                barPaint.color = barColor
+        barChartViewModel.barRects
+            .forEachIndexed { index, barRect ->
+                if (index == highlightIndex) {
+                    barPaint.color = barHighlightColor
+                } else {
+                    barPaint.color = barColor
+                }
+                canvas.drawRect(barRect.left, barRect.top, barRect.right, barRect.bottom, barPaint)
             }
-            canvas.drawRect(bar, barPaint)
-        }
         canvas.restore()
     }
 
