@@ -14,7 +14,7 @@
         app:labelTextColor="#888800"
         app:valueTextColor="#008888"
         app:boundaryColor="#AAAAAA"
-        android:layout_width="400dp"
-        android:layout_height="400dp"/>
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

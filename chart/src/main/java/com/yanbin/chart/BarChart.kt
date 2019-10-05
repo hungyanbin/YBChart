@@ -1,7 +1,10 @@
 package com.yanbin.chart
 
 import android.content.Context
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -42,6 +45,29 @@ class BarChart : View {
     constructor(context: Context, attributeSet: AttributeSet?) : this(context, attributeSet, 0)
     constructor(context: Context, attributeSet: AttributeSet?, defStyleAttr: Int) : super(context, attributeSet, defStyleAttr) {
         init(context, attributeSet)
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val newWidth = measureWithSpec(widthMeasureSpec) {
+            (getValueWidth() +
+                (barChartViewModel.barWidth + barChartViewModel.barDistance) * 3
+                + paddingLeft + paddingRight).toInt()
+        }
+        //FIXME Magic number for minHeight
+        val newHeight = measureWithSpec(heightMeasureSpec) {
+            (getLabelHeight() + 200.toPx() + paddingTop + paddingBottom).toInt()
+        }
+        setMeasuredDimension(newWidth, newHeight)
+
+        barChartViewModel.onMeasure((width - paddingLeft - paddingRight - getValueWidth()).toInt(),
+            (height - paddingBottom - paddingTop - getLabelHeight()).toInt())
+    }
+
+    override fun onDraw(canvas: Canvas) {
+        drawBoundary(canvas)
+        drawBar(canvas)
+        drawLabel(canvas)
+        drawValueText(canvas)
     }
 
     private fun init(context: Context, attributeSet: AttributeSet?) {
@@ -91,17 +117,17 @@ class BarChart : View {
         return labelTextPaint.textHeight()
     }
 
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        barChartViewModel.onMeasure((width - paddingLeft - paddingRight - getValueWidth()).toInt(),
-            (height - paddingBottom - paddingTop - getLabelHeight()).toInt())
-    }
+    private fun measureWithSpec(measureSpec: Int, minValueFun: () -> Int): Int {
+        val specMode = MeasureSpec.getMode(measureSpec)
+        val specSize = MeasureSpec.getSize(measureSpec)
+        val minValue = minValueFun.invoke()
 
-    override fun onDraw(canvas: Canvas) {
-        drawBoundary(canvas)
-        drawBar(canvas)
-        drawLabel(canvas)
-        drawValueText(canvas)
+        return when (specMode) {
+            MeasureSpec.EXACTLY -> specSize
+            MeasureSpec.AT_MOST -> if (specSize < minValue) specSize else minValue
+            MeasureSpec.UNSPECIFIED -> minValue
+            else -> 0
+        }
     }
 
     private fun drawValueText(canvas: Canvas) {
@@ -114,6 +140,10 @@ class BarChart : View {
         canvas.save()
         canvas.translate(paddingLeft + getValueWidth()
             , (height - paddingBottom).toFloat())
+
+        canvas.clipRect(0, 0,
+            (width - paddingLeft - paddingRight - getValueWidth()).toInt(),
+            -getLabelHeight().toInt())
 
         barChartViewModel
             .barLabelVM
@@ -136,6 +166,9 @@ class BarChart : View {
         canvas.save()
         canvas.translate(paddingLeft + getValueWidth(),
             height - paddingBottom - getLabelHeight())
+        canvas.clipRect(0, 0,
+            (width - paddingLeft - paddingRight - getValueWidth()).toInt(),
+            -(height - paddingTop - paddingBottom - getLabelHeight().toInt()))
 
         barChartViewModel.barRects
             .forEachIndexed { index, barRect ->
