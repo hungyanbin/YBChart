@@ -7,6 +7,7 @@ class BarChartViewModel {
     var barWidth: Int = 0
     var maxValue: Int = 0
     var labelHeight: Int = 0
+    var highlightIndex = -1
 
     var barRects: List<BarRect> = listOf()
     var barLabelVM: List<BarLabelVM> = listOf()
@@ -38,8 +39,8 @@ class BarChartViewModel {
         return BarRect(top, left.toFloat(), bottom, right.toFloat())
     }
 
-    fun findBarByPosition(x: Float, y: Float): Int {
-        return barRects.indexOfFirst { rect ->
+    fun onTapBarArea(x: Float, y: Float){
+        highlightIndex = barRects.indexOfFirst { rect ->
             rect.contains(x, y)
         }
     }

@@ -9,9 +9,6 @@ import android.view.View
 
 class BarChart : View {
 
-    //ViewModel
-    private var highlightIndex = -1
-
     private val MAX_VALUE = 100
     private val defaultTextSize = 30.toPx().toFloat()
     private val defaultColor = Color.GRAY
@@ -58,7 +55,7 @@ class BarChart : View {
                 val offsetY = height - paddingBottom - getLabelHeight()
                 val x = e.x - offsetX
                 val y = e.y - offsetY
-                highlightIndex = barChartViewModel.findBarByPosition(x, y)
+                barChartViewModel.onTapBarArea(x, y)
                 postInvalidate()
                 return true
             }
@@ -142,7 +139,7 @@ class BarChart : View {
 
         barChartViewModel.barRects
             .forEachIndexed { index, barRect ->
-                if (index == highlightIndex) {
+                if (index == barChartViewModel.highlightIndex) {
                     barPaint.color = barHighlightColor
                 } else {
                     barPaint.color = barColor
