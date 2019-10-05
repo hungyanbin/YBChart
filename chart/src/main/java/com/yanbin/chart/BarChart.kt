@@ -10,7 +10,7 @@ import android.view.View
 class BarChart : View {
 
     //ViewModel
-    private var highlightIndex = 0
+    private var highlightIndex = -1
 
     private val MAX_VALUE = 100
     private val defaultTextSize = 30.toPx().toFloat()
@@ -53,12 +53,12 @@ class BarChart : View {
             }
 
 
-            override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
-                if (highlightIndex < data.size - 1) {
-                    highlightIndex++
-                } else {
-                    highlightIndex = -1
-                }
+            override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
+                val offsetX = paddingLeft + getValueWidth()
+                val offsetY = height - paddingBottom - getLabelHeight()
+                val x = e.x - offsetX
+                val y = e.y - offsetY
+                highlightIndex = barChartViewModel.findBarByPosition(x, y)
                 postInvalidate()
                 return true
             }

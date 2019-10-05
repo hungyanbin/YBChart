@@ -35,14 +35,27 @@ class BarChartViewModel {
         val top = - (height * (barData.value / maxValue))
         val left = barDistance * (index + 1) + barWidth * index
         val right = left + barWidth
-        return BarRect(barData, top, left.toFloat(), bottom, right.toFloat())
+        return BarRect(top, left.toFloat(), bottom, right.toFloat())
+    }
+
+    fun findBarByPosition(x: Float, y: Float): Int {
+        return barRects.indexOfFirst { rect ->
+            rect.contains(x, y)
+        }
     }
 }
 
-class BarRect(val data: BarData,
-                   val top: Float,
-                   val left: Float,
-                   val bottom: Float,
-                   val right: Float)
+class BarRect(val top: Float,
+              val left: Float,
+              val bottom: Float,
+              val right: Float) {
+
+    fun contains(x: Float, y: Float): Boolean {
+        return (left < right && top < bottom  // check for empty first
+
+            && x >= left && x < right && y >= top && y < bottom)
+    }
+
+}
 
 class BarLabelVM(val text: String, val centerX: Float, val centerY: Float)
