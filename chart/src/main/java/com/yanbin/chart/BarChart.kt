@@ -8,7 +8,6 @@ import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
-import android.widget.OverScroller
 import androidx.core.view.ViewCompat
 import com.yanbin.widget.PaddingFreeView
 
@@ -41,6 +40,7 @@ class BarChart : PaddingFreeView {
         textSize = defaultTextSize
     }
     private var valueTextRect = Rect()
+    private lateinit var horizontalOverScroller: HorizontalOverScroller
     private val barChartViewModel = BarChartViewModel()
 
     constructor(context: Context) : this(context, null)
@@ -75,39 +75,31 @@ class BarChart : PaddingFreeView {
         drawValueText(canvas)
     }
 
-    private val scroller: OverScroller = OverScroller(context)
-
     private fun init(context: Context, attributeSet: AttributeSet?) {
+        horizontalOverScroller = HorizontalOverScroller(context, 40.toPx(), this)
+        horizontalOverScroller.onUpdatePosition = {
+            barChartViewModel.updateXOffset(it.toFloat())
+        }
         val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
             override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
                 val startX = barChartViewModel.xOffset.toInt()
                 val maxX = barChartViewModel.maxOffset.toInt()
-                val overX = 40.toPx()
-                if (startX + distanceX < -overX || startX + distanceX > maxX + overX) {
-                    return true
-                }
-
-                scroller.startScroll(startX, 0, distanceX.toInt(), 0, 0)
+                horizontalOverScroller.onScroll(startX, maxX, distanceX)
                 ViewCompat.postInvalidateOnAnimation(this@BarChart)
                 return true
             }
 
 
-
             override fun onFling(e1: MotionEvent, e2: MotionEvent, velocityX: Float, velocityY: Float): Boolean {
                 val startX = barChartViewModel.xOffset.toInt()
-                val startY = 0
-                val minX = 0
                 val maxX = barChartViewModel.maxOffset.toInt()
-                val overX = 40.toPx()
-                scroller.forceFinished(true)
-                scroller.fling(startX, startY, -velocityX.toInt(), 0, minX, maxX, 0, 0, overX, 0)
+                horizontalOverScroller.onFling(startX, maxX, velocityX)
                 ViewCompat.postInvalidateOnAnimation(this@BarChart)
                 return true
             }
 
             override fun onDown(e: MotionEvent): Boolean {
-                scroller.forceFinished(true)
+                horizontalOverScroller.onDown()
                 return super.onDown(e)
             }
 
@@ -123,14 +115,10 @@ class BarChart : PaddingFreeView {
         }
         val gestureDetector = GestureDetector(context, gestureListener)
         setOnTouchListener { _, event ->
-            when(event.action) {
+            when (event.action) {
                 MotionEvent.ACTION_UP -> {
-                    if (scroller.currX < 0 || scroller.currX > barChartViewModel.maxOffset) {
-                        val startX = scroller.currX
-                        val minX = 0
-                        val maxX = barChartViewModel.maxOffset.toInt()
-                        scroller.springBack(startX, 0, minX, maxX, 0, 0)
-                        ViewCompat.postInvalidateOnAnimation(this@BarChart)
+                    val maxX = barChartViewModel.maxOffset.toInt()
+                    if (horizontalOverScroller.onUp(maxX)) {
                         true
                     } else {
                         gestureDetector.onTouchEvent(event)
@@ -166,14 +154,7 @@ class BarChart : PaddingFreeView {
 
     override fun computeScroll() {
         super.computeScroll()
-
-        // The scroller isn't finished, meaning a fling or programmatic pan
-        // operation is currently active.
-        if (scroller.computeScrollOffset()) {
-            val currX: Int = scroller.currX
-            barChartViewModel.updateXOffset(currX.toFloat())
-            ViewCompat.postInvalidateOnAnimation(this)
-        }
+        horizontalOverScroller.computeScroll()
     }
 
     private fun getLabelTextHeight(): Int {
