@@ -8,11 +8,10 @@ class BarDataFactory {
 
         fun createRandomData(range: Int): List<BarData> {
             val random = Random(System.currentTimeMillis())
-            val names = listOf("2000", "2001", "2002", "2003", "2004")
-            return (0..4).map {
+            return (0..20).map {
                 val value = random.nextFloat() * range
-                val name = names[it]
-                BarData(name, value)
+                val name = 2000 + it
+                BarData(name.toString(), value)
             }
         }
     }

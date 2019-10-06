@@ -8,14 +8,25 @@ class BarChartViewModel {
     var maxValue: Int = 0
     var labelHeight: Int = 0
     var highlightIndex = -1
+    var xOffset = 0f
+    var maxOffset = 0f
+    var currentWidth = 0
+    var currentHeight = 0
 
     var barRects: List<BarRect> = listOf()
     var barLabelVM: List<BarLabelVM> = listOf()
 
     fun onUpdateSize(width: Int, height: Int) {
+        currentHeight = height
+        currentWidth = width
+        updateChart()
+    }
+
+    private fun updateChart() {
+        maxOffset = ((barDistance + barWidth) * barDatas.size + barDistance).toFloat() - currentWidth
         barRects = barDatas.asSequence()
             .mapIndexed { index, barData ->
-                generateRect(index, barData, height)
+                generateRect(index, barData)
             }.toList()
 
         barLabelVM = barDatas.asSequence()
@@ -25,23 +36,33 @@ class BarChartViewModel {
     }
 
     private fun generateBarLabelVM(index: Int, name: String): BarLabelVM {
-        val centerX = barDistance * (index + 1) + barWidth * (index + 0.5f)
+        val centerX = barDistance * (index + 1) + barWidth * (index + 0.5f) - xOffset
 
         return BarLabelVM(name, centerX)
     }
 
-    private fun generateRect(index: Int, barData: BarData, height: Int): BarRect {
+    private fun generateRect(index: Int, barData: BarData): BarRect {
         val bottom = 0f
-        val top = - (height * (barData.value / maxValue))
-        val left = barDistance * (index + 1) + barWidth * index
+        val top = -(currentHeight * (barData.value / maxValue))
+        val left = barDistance * (index + 1) + barWidth * index - xOffset
         val right = left + barWidth
-        return BarRect(top, left.toFloat(), bottom, right.toFloat())
+        return BarRect(top, left, bottom, right)
     }
 
-    fun onTapBarArea(x: Float, y: Float){
+    fun onTapBarArea(x: Float, y: Float) {
         highlightIndex = barRects.indexOfFirst { rect ->
             rect.contains(x, y)
         }
+    }
+
+    fun onScroll(deltaX: Float) {
+        when {
+            maxOffset < currentWidth -> xOffset = 0f
+            xOffset + deltaX < 0 -> xOffset = 0f
+            xOffset + deltaX > maxOffset -> xOffset = maxOffset
+            else -> xOffset += deltaX
+        }
+        updateChart()
     }
 }
 

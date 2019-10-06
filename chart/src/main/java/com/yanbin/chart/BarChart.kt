@@ -75,9 +75,11 @@ class BarChart : PaddingFreeView {
 
     private fun init(context: Context, attributeSet: AttributeSet?) {
         val gestureListener = object : GestureDetector.SimpleOnGestureListener() {
-            override fun onShowPress(e: MotionEvent?) {
+            override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
+                barChartViewModel.onScroll(distanceX)
+                postInvalidate()
+                return true
             }
-
 
             override fun onSingleTapConfirmed(e: MotionEvent): Boolean {
                 val offsetX = getValueWidth()
