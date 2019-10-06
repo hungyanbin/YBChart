@@ -22,6 +22,17 @@ class BarChartViewModel {
         updateChart()
     }
 
+    fun onTapBarArea(x: Float, y: Float) {
+        highlightIndex = barRects.indexOfFirst { rect ->
+            rect.contains(x, y)
+        }
+    }
+
+    fun updateXOffset(offset: Float) {
+        xOffset = offset
+        updateChart()
+    }
+
     private fun updateChart() {
         maxOffset = ((barDistance + barWidth) * barDatas.size + barDistance).toFloat() - currentWidth
         barRects = barDatas.asSequence()
@@ -47,22 +58,6 @@ class BarChartViewModel {
         val left = barDistance * (index + 1) + barWidth * index - xOffset
         val right = left + barWidth
         return BarRect(top, left, bottom, right)
-    }
-
-    fun onTapBarArea(x: Float, y: Float) {
-        highlightIndex = barRects.indexOfFirst { rect ->
-            rect.contains(x, y)
-        }
-    }
-
-    fun onScroll(deltaX: Float) {
-        when {
-            maxOffset < currentWidth -> xOffset = 0f
-            xOffset + deltaX < 0 -> xOffset = 0f
-            xOffset + deltaX > maxOffset -> xOffset = maxOffset
-            else -> xOffset += deltaX
-        }
-        updateChart()
     }
 }
 
