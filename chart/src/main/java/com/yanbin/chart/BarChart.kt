@@ -57,8 +57,10 @@ class BarChart : PaddingFreeView {
             (getLabelHeight() + 200.toPx()).toInt()
         }
         setMeasuredDimension(newWidth, newHeight)
+    }
 
-        barChartViewModel.onMeasure((canvasWidth - getValueWidth()).toInt(),
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        barChartViewModel.onUpdateSize((canvasWidth - getValueWidth()).toInt(),
             (canvasHeight - getLabelHeight()).toInt())
     }
 

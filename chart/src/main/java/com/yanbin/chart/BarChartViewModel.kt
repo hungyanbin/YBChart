@@ -12,7 +12,7 @@ class BarChartViewModel {
     var barRects: List<BarRect> = listOf()
     var barLabelVM: List<BarLabelVM> = listOf()
 
-    fun onMeasure(width: Int, height: Int) {
+    fun onUpdateSize(width: Int, height: Int) {
         barRects = barDatas.asSequence()
             .mapIndexed { index, barData ->
                 generateRect(index, barData, height)
