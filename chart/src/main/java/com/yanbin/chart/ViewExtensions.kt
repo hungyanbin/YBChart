@@ -14,3 +14,13 @@ fun Paint.textHeight(): Int {
     val fm = this.fontMetrics
     return (fm.bottom - fm.top).toInt()
 }
+
+fun Paint.textTopDistance(): Int {
+    val fm = this.fontMetrics
+    return - fm.top.toInt()
+}
+
+fun Paint.textBottomDistance(): Int {
+    val fm = this.fontMetrics
+    return fm.bottom.toInt()
+}

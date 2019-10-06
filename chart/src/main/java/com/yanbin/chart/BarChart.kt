@@ -133,7 +133,7 @@ class BarChart : PaddingFreeView {
 
     private fun drawValueText(canvas: Canvas) {
         val drawX = getValueWidth() - labelPadding
-        val drawY = valueTextPaint.textHeight() / 2
+        val drawY = valueTextPaint.textTopDistance()
         canvas.drawText(MAX_VALUE.toString(), drawX, drawY.toFloat(), valueTextPaint)
     }
 
@@ -149,7 +149,7 @@ class BarChart : PaddingFreeView {
         barChartViewModel
             .barLabelVM
             .forEach { labelVM: BarLabelVM ->
-                canvas.drawText(labelVM.text, labelVM.centerX, labelVM.centerY, labelTextPaint)
+                canvas.drawText(labelVM.text, labelVM.centerX, (- labelTextPaint.textBottomDistance()).toFloat(), labelTextPaint)
             }
 
         canvas.restore()

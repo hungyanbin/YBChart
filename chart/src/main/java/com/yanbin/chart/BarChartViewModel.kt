@@ -26,9 +26,8 @@ class BarChartViewModel {
 
     private fun generateBarLabelVM(index: Int, name: String): BarLabelVM {
         val centerX = barDistance * (index + 1) + barWidth * (index + 0.5f)
-        val centerY = - labelHeight / 2f
 
-        return BarLabelVM(name, centerX, centerY)
+        return BarLabelVM(name, centerX)
     }
 
     private fun generateRect(index: Int, barData: BarData, height: Int): BarRect {
@@ -59,4 +58,4 @@ class BarRect(val top: Float,
 
 }
 
-class BarLabelVM(val text: String, val centerX: Float, val centerY: Float)
+class BarLabelVM(val text: String, val centerX: Float)
