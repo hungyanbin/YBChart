@@ -190,8 +190,8 @@ class BarChart : PaddingFreeView {
             -getLabelHeight().toInt())
 
         barChartViewModel
-            .barLabelVM
-            .forEach { labelVM: BarLabelVM ->
+            .barLabel
+            .forEach { labelVM: BarLabel ->
                 canvas.drawText(labelVM.text, labelVM.centerX, (-labelTextPaint.textBottomDistance()).toFloat(), labelTextPaint)
             }
 

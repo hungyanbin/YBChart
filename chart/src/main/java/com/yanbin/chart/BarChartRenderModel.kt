@@ -14,7 +14,7 @@ class BarChartViewModel {
     var currentHeight = 0
 
     var barRects: List<BarRect> = listOf()
-    var barLabelVM: List<BarLabelVM> = listOf()
+    var barLabel: List<BarLabel> = listOf()
 
     fun onUpdateSize(width: Int, height: Int) {
         currentHeight = height
@@ -40,16 +40,16 @@ class BarChartViewModel {
                 generateRect(index, barData)
             }.toList()
 
-        barLabelVM = barDatas.asSequence()
+        barLabel = barDatas.asSequence()
             .mapIndexed { index, barData ->
                 generateBarLabelVM(index, barData.name)
             }.toList()
     }
 
-    private fun generateBarLabelVM(index: Int, name: String): BarLabelVM {
+    private fun generateBarLabelVM(index: Int, name: String): BarLabel {
         val centerX = barDistance * (index + 1) + barWidth * (index + 0.5f) - xOffset
 
-        return BarLabelVM(name, centerX)
+        return BarLabel(name, centerX)
     }
 
     private fun generateRect(index: Int, barData: BarData): BarRect {
@@ -74,4 +74,4 @@ class BarRect(val top: Float,
 
 }
 
-class BarLabelVM(val text: String, val centerX: Float)
+class BarLabel(val text: String, val centerX: Float)
